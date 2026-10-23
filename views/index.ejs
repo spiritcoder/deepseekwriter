@@ -1,0 +1,228 @@
+<div class="dashboard-content">
+
+  <!-- Header Banner -->
+  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+    <div>
+      <h1 style="font-size: 1.8rem; letter-spacing: -0.02em;">
+        <% if (locals.activeFolder) { %>
+          <%= locals.activeFolder.name %>
+        <% } else if (locals.searchQuery) { %>
+          Search: "<%= locals.searchQuery %>"
+        <% } else { %>
+          Editorial Workspace
+        <% } %>
+      </h1>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px;">
+        <% if (locals.activeFolder && locals.activeFolder.description) { %>
+          <%= locals.activeFolder.description %>
+        <% } else { %>
+          Research and craft published-grade cultural essays powered by DeepSeek Search & Flux.
+        <% } %>
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 10px;">
+      <button type="button" class="btn btn-secondary" onclick="openModal('modal-create-folder')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+        New Folder
+      </button>
+      <a href="/editor/new<%= locals.activeFolder && locals.activeFolder.id ? ('?folderId=' + locals.activeFolder.id) : '' %>" class="btn btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Create Article
+      </a>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-value"><%= (locals.stats && locals.stats.total) || 0 %></span>
+        <span class="stat-label">Total Articles</span>
+      </div>
+      <div style="color: var(--accent-cyan); display: flex;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+      </div>
+    </div>
+
+    <div class="stat-card emerald">
+      <div class="stat-info">
+        <span class="stat-value"><%= (locals.stats && locals.stats.published) || 0 %></span>
+        <span class="stat-label">Published</span>
+      </div>
+      <div style="color: var(--accent-emerald); display: flex;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+      </div>
+    </div>
+
+    <div class="stat-card amber">
+      <div class="stat-info">
+        <span class="stat-value"><%= (locals.stats && locals.stats.drafts) || 0 %></span>
+        <span class="stat-label">Active Drafts</span>
+      </div>
+      <div style="color: var(--accent-amber); display: flex;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+      </div>
+    </div>
+
+    <div class="stat-card purple">
+      <div class="stat-info">
+        <span class="stat-value"><%= ((locals.stats && locals.stats.totalWords) || 0).toLocaleString() %></span>
+        <span class="stat-label">Words Documented</span>
+      </div>
+      <div style="color: var(--accent-purple); display: flex;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Status Bar -->
+  <div class="filter-bar">
+    <div class="filter-pills">
+      <%
+        function buildDashboardFilterUrl(targetStatus) {
+          const params = new URLSearchParams();
+          if (targetStatus && targetStatus !== 'all') params.set('status', targetStatus);
+          if (locals.activeFolder) params.set('folder', locals.activeFolder.slug);
+          if (locals.searchQuery) params.set('q', locals.searchQuery);
+          return '/' + (params.toString() ? '?' + params.toString() : '');
+        }
+      %>
+      <a href="<%= buildDashboardFilterUrl('all') %>" class="pill-link <%= (!locals.currentStatus || locals.currentStatus === 'all') ? 'active' : '' %>">All Status</a>
+      <a href="<%= buildDashboardFilterUrl('draft') %>" class="pill-link <%= locals.currentStatus === 'draft' ? 'active' : '' %>">Drafts (<%= (locals.stats && locals.stats.drafts) || 0 %>)</a>
+      <a href="<%= buildDashboardFilterUrl('review') %>" class="pill-link <%= locals.currentStatus === 'review' ? 'active' : '' %>">In Review (<%= (locals.stats && locals.stats.inReview) || 0 %>)</a>
+      <a href="<%= buildDashboardFilterUrl('published') %>" class="pill-link <%= locals.currentStatus === 'published' ? 'active' : '' %>">Published (<%= (locals.stats && locals.stats.published) || 0 %>)</a>
+    </div>
+
+    <div style="font-size: 0.85rem; color: var(--text-muted);">
+      Total: <strong><%= locals.totalArticles !== undefined ? locals.totalArticles : locals.articles.length %></strong> articles
+    </div>
+  </div>
+
+  <!-- Articles List Grid -->
+  <% if (locals.articles && locals.articles.length > 0) { %>
+    <div class="articles-grid">
+      <% locals.articles.forEach(function(article) { %>
+        <div class="article-card">
+          
+          <div class="article-cover-wrap">
+            <% if (article.cover_image) { %>
+              <img src="<%= article.cover_image %>" class="article-cover-img" alt="<%= article.title %>" loading="lazy">
+            <% } else { %>
+              <div class="article-placeholder-cover">
+                <span style="font-size: 0.82rem; color: var(--text-muted);">No Cover Visual</span>
+              </div>
+            <% } %>
+
+            <div style="position: absolute; top: 10px; right: 10px;">
+              <span class="status-badge <%= article.status %>"><%= article.status %></span>
+            </div>
+          </div>
+
+          <div class="article-card-body">
+            <div class="article-badges-row">
+              <span class="folder-badge" style="border-left: 3px solid <%= article.folder_color || '#64748b' %>;">
+                <%= article.folder_name || 'Uncategorized' %>
+              </span>
+              <% if (article.region) { %>
+                <span style="font-size: 0.72rem; color: var(--accent-cyan); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                  <%= article.region %>
+                </span>
+              <% } %>
+            </div>
+
+            <a href="/editor/<%= article.id %>" class="article-card-title">
+              <%= article.title %>
+            </a>
+
+            <p class="article-card-snippet">
+              <% if (article.executive_summary) { %>
+                <%= article.executive_summary.substring(0, 160) %>...
+              <% } else if (article.content_markdown) { %>
+                <%= article.content_markdown.replace(/[#*`_>]/g, '').substring(0, 160) %>...
+              <% } else { %>
+                No content generated yet.
+              <% } %>
+            </p>
+
+            <div class="article-card-footer">
+              <span><%= article.word_count || 0 %> words • <%= article.reading_time || 1 %> min read</span>
+              
+              <div class="article-card-actions">
+                <button type="button" class="btn btn-ghost btn-sm" onclick="promptMoveArticle(<%= article.id %>, <%= article.folder_id || 'null' %>)" title="Move to Folder" style="padding: 6px 8px;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                </button>
+                <a href="/article/<%= article.id %>" class="btn btn-ghost btn-sm" title="Reader View" style="padding: 6px 8px;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </a>
+                <a href="/editor/<%= article.id %>" class="btn btn-secondary btn-sm" style="padding: 4px 10px; font-size: 0.78rem;">
+                  Edit
+                </a>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="confirmDeleteArticle(<%= article.id %>, '<%= article.title.replace(/'/g, '\\\'') %>')" title="Delete Article" style="color: var(--accent-rose); padding: 6px 8px;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      <% }); %>
+    </div>
+
+    <!-- Dashboard Pagination -->
+    <% if (locals.totalPages && locals.totalPages > 1) { %>
+      <%
+        function buildDashboardPageUrl(p) {
+          const params = new URLSearchParams();
+          params.set('page', p);
+          if (locals.currentStatus && locals.currentStatus !== 'all') params.set('status', locals.currentStatus);
+          if (locals.currentFolderParam) params.set('folder', locals.currentFolderParam);
+          if (locals.searchQuery) params.set('q', locals.searchQuery);
+          return '/?' + params.toString();
+        }
+      %>
+      <div class="pagination-wrap">
+        <div class="pagination-info">
+          Showing <strong><%= locals.startIndex %>–<%= locals.endIndex %></strong> of <strong><%= locals.totalArticles %></strong> articles
+        </div>
+
+        <div class="pagination-controls">
+          <a href="<%= locals.currentPage > 1 ? buildDashboardPageUrl(locals.currentPage - 1) : '#' %>" class="page-btn <%= locals.currentPage <= 1 ? 'disabled' : '' %>" title="Previous Page">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </a>
+
+          <% for (let p = 1; p <= locals.totalPages; p++) { %>
+            <a href="<%= buildDashboardPageUrl(p) %>" class="page-btn <%= p === locals.currentPage ? 'active' : '' %>"><%= p %></a>
+          <% } %>
+
+          <a href="<%= locals.currentPage < locals.totalPages ? buildDashboardPageUrl(locals.currentPage + 1) : '#' %>" class="page-btn <%= locals.currentPage >= locals.totalPages ? 'disabled' : '' %>" title="Next Page">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </a>
+        </div>
+      </div>
+    <% } %>
+
+  <% } else { %>
+    <div class="empty-state">
+      <div class="empty-icon" style="color: var(--accent-cyan); display: flex; justify-content: center; margin-bottom: 14px;">
+        <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+      </div>
+      <h3>No Articles Found</h3>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; max-width: 400px; margin: 0 auto 16px auto;">
+        <% if (locals.searchQuery) { %>
+          No articles matched your search query "<%= locals.searchQuery %>".
+        <% } else if (locals.activeFolder) { %>
+          This folder is currently empty. Start drafting your first article here!
+        <% } else { %>
+          You haven't written any articles yet. Create your first piece using DeepSeek research.
+        <% } %>
+      </p>
+      <a href="/editor/new<%= locals.activeFolder && locals.activeFolder.id ? ('?folderId=' + locals.activeFolder.id) : '' %>" class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Create First Article
+      </a>
+    </div>
+  <% } %>
+
+</div>

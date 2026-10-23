@@ -1,0 +1,1057 @@
+<div class="dashboard-content">
+
+  <!-- Header Banner -->
+  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+    <div>
+      <h1 style="font-size: 1.8rem; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px;">
+        <span style="display: inline-flex; width: 34px; height: 34px; border-radius: 8px; background: rgba(56, 189, 248, 0.12); align-items: center; justify-content: center; color: var(--accent-cyan); border: 1px solid rgba(56, 189, 248, 0.25);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+        </span>
+        Planned Titles & Content Queue
+      </h1>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px;">
+        Collect titles, research topics, and content ideas over time. Start writing full essays whenever you're ready.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <button type="button" class="btn btn-primary" onclick="openClassifyModal()" id="btn-header-ai-classify" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35); display: inline-flex; align-items: center; gap: 8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        <span>AI Auto-Classify Titles</span>
+        <% if (locals.uncategorizedTotal > 0) { %>
+          <span style="background: rgba(255, 255, 255, 0.22); color: #fff; font-size: 0.72rem; padding: 2px 7px; border-radius: 999px; font-weight: 700;">
+            <%= locals.uncategorizedTotal %> uncategorized
+          </span>
+        <% } %>
+      </button>
+      <button type="button" class="btn btn-secondary" onclick="openModal('modal-bulk-backlog')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+        Bulk Add Titles
+      </button>
+      <button type="button" class="btn btn-primary" onclick="openModal('modal-add-backlog')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Add Single Title
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card amber">
+      <div class="stat-info">
+        <span class="stat-value"><%= (stats && stats.planned) || 0 %></span>
+        <span class="stat-label">Planned (To Write)</span>
+      </div>
+      <div style="color: var(--accent-amber); display: flex;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      </div>
+    </div>
+
+    <div class="stat-card purple">
+      <div class="stat-info">
+        <span class="stat-value"><%= (stats && stats.writing) || 0 %></span>
+        <span class="stat-label">In Writing</span>
+      </div>
+      <div style="color: var(--accent-purple); display: flex;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+      </div>
+    </div>
+
+    <div class="stat-card emerald">
+      <div class="stat-info">
+        <span class="stat-value"><%= (stats && stats.completed) || 0 %></span>
+        <span class="stat-label">Completed</span>
+      </div>
+      <div style="color: var(--accent-emerald); display: flex;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-value"><%= (stats && stats.total) || 0 %></span>
+        <span class="stat-label">Total Titles Saved</span>
+      </div>
+      <div style="color: var(--accent-cyan); display: flex;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Uncategorized AI Classification Prompt Banner -->
+  <% if (locals.uncategorizedTotal > 0) { %>
+    <div style="margin-top: 14px; background: linear-gradient(90deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.08)); border: 1px solid rgba(139, 92, 246, 0.28); border-radius: var(--radius-md); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 1.35rem; display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; background: rgba(139, 92, 246, 0.2); color: #c4b5fd;">
+          🪄
+        </span>
+        <div>
+          <div style="color: #f8fafc; font-size: 0.94rem; display: flex; align-items: center; gap: 8px;">
+            <strong><%= locals.uncategorizedTotal %> titles are currently Uncategorized</strong>
+            <span style="font-size: 0.74rem; background: rgba(139, 92, 246, 0.25); color: #c4b5fd; padding: 1px 8px; border-radius: 999px; font-weight: 600;">Needs Classification</span>
+          </div>
+          <p style="color: var(--text-secondary); font-size: 0.83rem; margin-top: 2px;">
+            Let DeepSeek AI read their titles and automatically sort them into Food, Deities, Culture, History, etc.
+          </p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <a href="/backlog?folder=uncategorized" class="btn btn-ghost btn-sm" style="font-size: 0.82rem; border: 1px solid rgba(255,255,255,0.12);">
+          View <%= locals.uncategorizedTotal %> Uncategorized
+        </a>
+        <button type="button" class="btn btn-primary btn-sm" onclick="openClassifyModal('uncategorized')" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          <span>Auto-Classify with AI</span>
+        </button>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Filter & Status Bar -->
+  <div class="filter-bar" style="flex-wrap: wrap; gap: 12px; margin-top: 14px;">
+    <div class="filter-pills">
+      <% 
+        function buildFilterUrl(newStatus, newPriority, newFolder) {
+          const params = new URLSearchParams();
+          const s = newStatus !== undefined ? newStatus : currentStatus;
+          const p = newPriority !== undefined ? newPriority : currentPriority;
+          const f = newFolder !== undefined ? newFolder : locals.currentFolderParam;
+          if (s && s !== 'all') params.set('status', s);
+          if (p && p !== 'all') params.set('priority', p);
+          if (f && f !== 'all') params.set('folder', f);
+          if (locals.searchQuery) params.set('q', locals.searchQuery);
+          return '/backlog' + (params.toString() ? '?' + params.toString() : '');
+        }
+      %>
+      <a href="<%= buildFilterUrl('all', undefined, undefined) %>" class="pill-link <%= currentStatus === 'all' ? 'active' : '' %>">All Status</a>
+      <a href="<%= buildFilterUrl('planned', undefined, undefined) %>" class="pill-link <%= currentStatus === 'planned' ? 'active' : '' %>">Planned (<%= (stats && stats.planned) || 0 %>)</a>
+      <a href="<%= buildFilterUrl('writing', undefined, undefined) %>" class="pill-link <%= currentStatus === 'writing' ? 'active' : '' %>">In Writing (<%= (stats && stats.writing) || 0 %>)</a>
+      <a href="<%= buildFilterUrl('completed', undefined, undefined) %>" class="pill-link <%= currentStatus === 'completed' ? 'active' : '' %>">Completed (<%= (stats && stats.completed) || 0 %>)</a>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; margin-left: auto; flex-wrap: wrap;">
+      <!-- Folder Filter -->
+      <select class="form-select" style="padding: 6px 12px; font-size: 0.82rem; height: 36px; min-width: 175px;" onchange="location.href='<%= buildFilterUrl(undefined, undefined, '') %>&folder=' + encodeURIComponent(this.value)">
+        <option value="all" <%= (!locals.currentFolderParam || locals.currentFolderParam === 'all') ? 'selected' : '' %>>📁 All Folders</option>
+        <option value="uncategorized" <%= locals.currentFolderParam === 'uncategorized' ? 'selected' : '' %>>📁 Uncategorized</option>
+        <% if (folders) { %>
+          <% folders.forEach(function(f) { %>
+            <option value="<%= f.slug %>" <%= (locals.currentFolderParam === f.slug || locals.currentFolderParam == f.id) ? 'selected' : '' %>>
+              <%= f.name %> (<%= f.backlog_count || 0 %>)
+            </option>
+          <% }); %>
+        <% } %>
+      </select>
+
+      <!-- Priority Filter with High Contrast -->
+      <select class="form-select" style="padding: 6px 12px; font-size: 0.82rem; height: 36px; width: 140px;" onchange="location.href='<%= buildFilterUrl(undefined, '', undefined) %>&priority=' + this.value">
+        <option value="all" <%= currentPriority === 'all' ? 'selected' : '' %>>All Priorities</option>
+        <option value="high" <%= currentPriority === 'high' ? 'selected' : '' %>>High Priority</option>
+        <option value="normal" <%= currentPriority === 'normal' ? 'selected' : '' %>>Normal Priority</option>
+        <option value="low" <%= currentPriority === 'low' ? 'selected' : '' %>>Low Priority</option>
+      </select>
+
+      <span style="font-size: 0.85rem; color: var(--text-muted); white-space: nowrap;">
+        Total: <strong><%= locals.totalItems !== undefined ? locals.totalItems : items.length %></strong>
+      </span>
+    </div>
+  </div>
+
+  <!-- Backlog Items List -->
+  <% if (items && items.length > 0) { %>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <% items.forEach(function(item) { %>
+        <div class="article-card" style="padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; transition: transform 0.15s, border-color 0.15s;">
+          
+          <!-- Top Row: Badges & Actions -->
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <!-- Priority Badge -->
+              <% if (item.priority === 'high') { %>
+                <span class="status-badge" style="background: rgba(244, 63, 94, 0.12); color: var(--accent-rose); border: 1px solid rgba(244, 63, 94, 0.28); display: inline-flex; align-items: center; gap: 5px;">
+                  <span class="priority-dot high"></span> High Priority
+                </span>
+              <% } else if (item.priority === 'low') { %>
+                <span class="status-badge" style="background: rgba(100, 116, 139, 0.12); color: var(--text-muted); border: 1px solid rgba(100, 116, 139, 0.24); display: inline-flex; align-items: center; gap: 5px;">
+                  <span class="priority-dot low"></span> Low
+                </span>
+              <% } else { %>
+                <span class="status-badge" style="background: rgba(56, 189, 248, 0.12); color: var(--accent-cyan); border: 1px solid rgba(56, 189, 248, 0.24); display: inline-flex; align-items: center; gap: 5px;">
+                  <span class="priority-dot normal"></span> Normal
+                </span>
+              <% } %>
+
+              <!-- Status Badge -->
+              <% if (item.status === 'completed') { %>
+                <span class="status-badge published" style="display: inline-flex; align-items: center; gap: 5px;">
+                  <span class="status-dot completed"></span> Completed
+                </span>
+              <% } else if (item.status === 'writing') { %>
+                <span class="status-badge review" style="display: inline-flex; align-items: center; gap: 5px;">
+                  <span class="status-dot writing"></span> In Writing
+                </span>
+              <% } else { %>
+                <span class="status-badge draft" style="display: inline-flex; align-items: center; gap: 5px;">
+                  <span class="status-dot planned"></span> Planned
+                </span>
+              <% } %>
+
+              <!-- Folder Quick Assign Selector & AI Helper -->
+              <div style="display: inline-flex; align-items: center; gap: 5px;">
+                <select 
+                  class="form-select" 
+                  title="Click to assign folder"
+                  id="folder-select-<%= item.id %>"
+                  data-prev-value="<%= item.folder_id || '' %>"
+                  onchange="quickAssignBacklogFolder(<%= item.id %>, this.value, this)"
+                  style="padding: 2px 8px; font-size: 0.78rem; height: 26px; border-radius: var(--radius-sm); border-color: <%= item.folder_color ? (item.folder_color + '66') : 'var(--border-color)' %>; color: <%= item.folder_color ? '#f8fafc' : 'var(--text-secondary)' %>; background-color: rgba(15, 23, 42, 0.85); max-width: 190px; cursor: pointer;"
+                >
+                  <option value="" <%= !item.folder_id ? 'selected' : '' %>>📁 Uncategorized</option>
+                  <% if (folders) { %>
+                    <% folders.forEach(function(f) { %>
+                      <option value="<%= f.id %>" <%= item.folder_id === f.id ? 'selected' : '' %>>
+                        <%= f.name %>
+                      </option>
+                    <% }); %>
+                  <% } %>
+                </select>
+
+                <button 
+                  type="button" 
+                  class="btn btn-ghost btn-xs" 
+                  id="btn-ai-single-<%= item.id %>"
+                  onclick="aiClassifySingleTitle(<%= item.id %>, this)" 
+                  title="Ask AI to auto-classify this title"
+                  style="padding: 2px 7px; height: 26px; font-size: 0.72rem; border: 1px solid rgba(139, 92, 246, 0.35); color: #c4b5fd; background: rgba(139, 92, 246, 0.08); border-radius: var(--radius-sm); display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;"
+                >
+                  <span>✨ AI</span>
+                </button>
+              </div>
+
+              <!-- Region Tag -->
+              <% if (item.region) { %>
+                <span style="font-size: 0.76rem; color: var(--accent-cyan); background: rgba(6, 182, 212, 0.08); padding: 2px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                  <%= item.region %>
+                </span>
+              <% } %>
+            </div>
+
+            <!-- Action Buttons on Right -->
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <% if (item.article_id) { %>
+                <a href="/editor/<%= item.article_id %>" class="btn btn-primary btn-sm">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                  Open Editor
+                </a>
+              <% } else { %>
+                <button type="button" class="btn btn-primary btn-sm" onclick="startWritingBacklog(<%= item.id %>)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                  Start Writing
+                </button>
+              <% } %>
+
+              <button type="button" class="btn btn-ghost btn-sm" onclick="promptEditBacklog(<%= item.id %>)" title="Edit Item" style="padding: 6px 8px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="confirmDeleteBacklog(<%= item.id %>, '<%= item.title.replace(/'/g, '\\\'') %>')" style="color: var(--accent-rose); padding: 6px 8px;" title="Delete">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Main Title -->
+          <div style="font-size: 1.08rem; font-weight: 700; color: #f8fafc; line-height: 1.4;">
+            <%= item.title %>
+          </div>
+
+          <!-- Notes / Angle (if any) -->
+          <% if (item.notes || (item.topic && item.topic !== item.title)) { %>
+            <div style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.45; background: rgba(0,0,0,0.22); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.03);">
+              <% if (item.topic && item.topic !== item.title) { %>
+                <div><strong style="color: var(--accent-cyan);">Topic Angle:</strong> <%= item.topic %></div>
+              <% } %>
+              <% if (item.notes) { %>
+                <div style="margin-top: <%= (item.topic && item.topic !== item.title) ? '4px' : '0' %>;"><%= item.notes %></div>
+              <% } %>
+            </div>
+          <% } %>
+
+          <!-- Bottom Timestamp -->
+          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.74rem; color: var(--text-muted); margin-top: 2px;">
+            <span>Added on <%= new Date(item.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></span>
+            <% if (item.article_id && item.article_status) { %>
+              <span>Article Status: <strong style="text-transform: capitalize; color: var(--text-primary);"><%= item.article_status %></strong></span>
+            <% } %>
+          </div>
+
+        </div>
+      <% }); %>
+    </div>
+
+    <!-- Pagination Controls -->
+    <% if (locals.totalPages && locals.totalPages > 1) { %>
+      <%
+        function buildPageUrl(p) {
+          const params = new URLSearchParams();
+          params.set('page', p);
+          if (locals.currentStatus && locals.currentStatus !== 'all') params.set('status', locals.currentStatus);
+          if (locals.currentPriority && locals.currentPriority !== 'all') params.set('priority', locals.currentPriority);
+          if (locals.currentFolderParam) params.set('folder', locals.currentFolderParam);
+          if (locals.searchQuery) params.set('q', locals.searchQuery);
+          return '/backlog?' + params.toString();
+        }
+      %>
+      <div class="pagination-wrap">
+        <div class="pagination-info">
+          Showing <strong><%= locals.startIndex %>–<%= locals.endIndex %></strong> of <strong><%= locals.totalItems %></strong> titles
+        </div>
+
+        <div class="pagination-controls">
+          <!-- Previous Button -->
+          <a href="<%= locals.currentPage > 1 ? buildPageUrl(locals.currentPage - 1) : '#' %>" class="page-btn <%= locals.currentPage <= 1 ? 'disabled' : '' %>" title="Previous Page">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </a>
+
+          <!-- Page Numbers -->
+          <% 
+            const startP = Math.max(1, locals.currentPage - 2);
+            const endP = Math.min(locals.totalPages, locals.currentPage + 2);
+            if (startP > 1) { 
+          %>
+            <a href="<%= buildPageUrl(1) %>" class="page-btn">1</a>
+            <% if (startP > 2) { %>
+              <span style="color: var(--text-muted); padding: 0 4px;">...</span>
+            <% } %>
+          <% } %>
+
+          <% for (let p = startP; p <= endP; p++) { %>
+            <a href="<%= buildPageUrl(p) %>" class="page-btn <%= p === locals.currentPage ? 'active' : '' %>"><%= p %></a>
+          <% } %>
+
+          <% if (endP < locals.totalPages) { %>
+            <% if (endP < locals.totalPages - 1) { %>
+              <span style="color: var(--text-muted); padding: 0 4px;">...</span>
+            <% } %>
+            <a href="<%= buildPageUrl(locals.totalPages) %>" class="page-btn"><%= locals.totalPages %></a>
+          <% } %>
+
+          <!-- Next Button -->
+          <a href="<%= locals.currentPage < locals.totalPages ? buildPageUrl(locals.currentPage + 1) : '#' %>" class="page-btn <%= locals.currentPage >= locals.totalPages ? 'disabled' : '' %>" title="Next Page">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </a>
+        </div>
+      </div>
+    <% } %>
+
+  <% } else { %>
+    <!-- Empty State -->
+    <div style="text-align: center; padding: 60px 20px; background: var(--bg-card); border: 1px dashed var(--border-color); border-radius: var(--radius-md);">
+      <div style="display: inline-flex; width: 56px; height: 56px; border-radius: 50%; background: rgba(56, 189, 248, 0.1); align-items: center; justify-content: center; color: var(--accent-cyan); margin-bottom: 14px;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+      </div>
+      <h3 style="font-size: 1.25rem; margin-bottom: 8px;">No Planned Titles Found</h3>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; max-width: 480px; margin: 0 auto 20px auto;">
+        Keep a collection of future article titles and cultural topics. Add them whenever ideas strike, then write at your convenience.
+      </p>
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button type="button" class="btn btn-secondary" onclick="openModal('modal-bulk-backlog')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+          Paste List of Titles
+        </button>
+        <button type="button" class="btn btn-primary" onclick="openModal('modal-add-backlog')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Add First Title
+        </button>
+      </div>
+    </div>
+  <% } %>
+
+</div>
+
+<!-- Modal: Add Single Backlog Title -->
+<div id="modal-add-backlog" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 style="display: flex; align-items: center; gap: 8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Add Title to Queue
+      </h3>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal('modal-add-backlog')">✕</button>
+    </div>
+    <form onsubmit="handleCreateBacklog(event)">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Article Title *</label>
+          <input type="text" name="title" class="form-input" placeholder="e.g. The Sacred Metallurgy of Awka Blacksmiths" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Topic / Angle (optional)</label>
+          <input type="text" name="topic" class="form-input" placeholder="e.g. Ritual initiation, iron taboos, and guild secrets">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Folder</label>
+            <select name="folder_id" class="form-select">
+              <option value="">(Uncategorized)</option>
+              <% if (folders) { %>
+                <% folders.forEach(function(f) { %>
+                  <option value="<%= f.id %>"><%= f.name %></option>
+                <% }); %>
+              <% } %>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Priority</label>
+            <select name="priority" class="form-select">
+              <option value="normal">Normal</option>
+              <option value="high">High Priority</option>
+              <option value="low">Low Priority</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Geographic Region (optional)</label>
+          <input type="text" name="region" class="form-input" placeholder="e.g. Awka, Anambra State">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Editorial Notes / Angles to cover</label>
+          <textarea name="notes" class="form-textarea" style="min-height: 70px;" placeholder="Add references to interview elders, specific shrine names, or sub-themes..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-add-backlog')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save to Queue</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Bulk Add Backlog Titles -->
+<div id="modal-bulk-backlog" class="modal-overlay">
+  <div class="modal-card" style="max-width: 600px;">
+    <div class="modal-header">
+      <div>
+        <h3 style="display: flex; align-items: center; gap: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+          Bulk Add Titles
+        </h3>
+        <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+          Paste a list of titles (one per line). Numbers and bullet points are automatically cleaned.
+        </p>
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal('modal-bulk-backlog')">✕</button>
+    </div>
+    <form onsubmit="handleBulkCreateBacklog(event)">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Titles List (one title per line) *</label>
+          <textarea id="bulk_titles_text" name="titlesText" class="form-textarea" style="min-height: 180px; font-family: monospace; font-size: 0.88rem;" placeholder="The Philosophy of Ikenga: Personal Agency in Igbo Cosmology&#10;Secret Societies of Arochukwu and the Long Juju&#10;Sacred Groves of Nsukka: Ecology and Ancestral Law&#10;Ozo Title Taking: Economics, Regalia, and Spiritual Elevation" required></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Target Folder (applies to all)</label>
+            <select name="folder_id" class="form-select">
+              <option value="">(Uncategorized)</option>
+              <% if (folders) { %>
+                <% folders.forEach(function(f) { %>
+                  <option value="<%= f.id %>"><%= f.name %></option>
+                <% }); %>
+              <% } %>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Priority</label>
+            <select name="priority" class="form-select">
+              <option value="normal">Normal</option>
+              <option value="high">High Priority</option>
+              <option value="low">Low Priority</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Default Region (optional)</label>
+          <input type="text" name="region" class="form-input" placeholder="e.g. Igboland / Southeastern Nigeria">
+        </div>
+
+        <!-- AI Auto-Classify Option -->
+        <div style="margin-top: 14px; padding: 12px 14px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.22); border-radius: var(--radius-sm); display: flex; align-items: flex-start; gap: 10px;">
+          <input type="checkbox" id="bulk_auto_classify" name="auto_classify" value="true" style="margin-top: 2px; width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent-purple);" checked>
+          <label for="bulk_auto_classify" style="font-size: 0.84rem; cursor: pointer; color: #e2e8f0; line-height: 1.4;">
+            <strong style="color: #c4b5fd;">✨ Auto-classify each title into folders with AI</strong>
+            <span style="display: block; font-size: 0.76rem; color: var(--text-muted); margin-top: 2px;">
+              DeepSeek analyzes each imported title and routes it to its matching cultural folder automatically.
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-bulk-backlog')">Cancel</button>
+        <button type="submit" id="btn-submit-bulk" class="btn btn-primary">Save All Titles</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Edit Backlog Item -->
+<div id="modal-edit-backlog" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 style="display: flex; align-items: center; gap: 8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+        Edit Planned Title
+      </h3>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal('modal-edit-backlog')">✕</button>
+    </div>
+    <form onsubmit="handleUpdateBacklog(event)">
+      <input type="hidden" id="edit_backlog_id">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Article Title *</label>
+          <input type="text" id="edit_backlog_title" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Topic / Angle</label>
+          <input type="text" id="edit_backlog_topic" class="form-input">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Folder</label>
+            <select id="edit_backlog_folder" class="form-select">
+              <option value="">(Uncategorized)</option>
+              <% if (folders) { %>
+                <% folders.forEach(function(f) { %>
+                  <option value="<%= f.id %>"><%= f.name %></option>
+                <% }); %>
+              <% } %>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select id="edit_backlog_status" class="form-select">
+              <option value="planned">Planned</option>
+              <option value="writing">In Writing</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Priority</label>
+            <select id="edit_backlog_priority" class="form-select">
+              <option value="high">High Priority</option>
+              <option value="normal">Normal</option>
+              <option value="low">Low Priority</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Geographic Region</label>
+            <input type="text" id="edit_backlog_region" class="form-input">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea id="edit_backlog_notes" class="form-textarea" style="min-height: 70px;"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-edit-backlog')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: AI Classify Titles -->
+<div id="modal-ai-classify" class="modal-overlay">
+  <div class="modal-card" style="max-width: 600px;">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="display: inline-flex; width: 34px; height: 34px; border-radius: 8px; background: rgba(139, 92, 246, 0.15); align-items: center; justify-content: center; color: var(--accent-purple); border: 1px solid rgba(139, 92, 246, 0.3);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        </span>
+        <div>
+          <h3 style="font-size: 1.15rem; font-weight: 700;">AI Auto-Classify Titles</h3>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 1px;">
+            DeepSeek analyzes titles and accurately files them into cultural folders.
+          </p>
+        </div>
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal('modal-ai-classify')">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- State 1: Configuration Form (shown initially) -->
+      <div id="ai-classify-config-state">
+        <div style="margin-bottom: 18px;">
+          <label class="form-label" style="margin-bottom: 8px;">Select Classification Scope</label>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-md); cursor: pointer; transition: border-color 0.15s;">
+              <input type="radio" name="classify_scope" value="uncategorized" checked style="margin-top: 3px; accent-color: var(--accent-purple);">
+              <div>
+                <strong style="color: #f8fafc; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+                  Uncategorized Titles Only
+                  <span style="font-size: 0.75rem; background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); padding: 1px 8px; border-radius: 999px;">
+                    <%= locals.uncategorizedTotal || 0 %> titles
+                  </span>
+                </strong>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 3px;">
+                  Only process titles that are not currently assigned to any folder.
+                </p>
+              </div>
+            </label>
+
+            <label style="display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-md); cursor: pointer; transition: border-color 0.15s;">
+              <input type="radio" name="classify_scope" value="all" style="margin-top: 3px; accent-color: var(--accent-purple);">
+              <div>
+                <strong style="color: #f8fafc; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+                  All Titles in Backlog
+                  <span style="font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); padding: 1px 8px; border-radius: 999px;">
+                    <%= (stats && stats.total) || 0 %> total titles
+                  </span>
+                </strong>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 3px;">
+                  Re-evaluate and organize all titles in your backlog into the optimal folders.
+                </p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label" style="margin-bottom: 8px;">Target Cultural Folders (<%= folders ? folders.length : 0 %>)</label>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; max-height: 140px; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.25); border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.04);">
+            <% if (folders) { %>
+              <% folders.forEach(function(f) { %>
+                <span style="font-size: 0.78rem; padding: 3px 8px; border-radius: 4px; background: rgba(255,255,255,0.05); color: #e2e8f0; display: inline-flex; align-items: center; gap: 5px; border-left: 3px solid <%= f.color || '#38bdf8' %>;">
+                  <%= f.name %>
+                </span>
+              <% }); %>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- State 2: Running / Progress State (hidden by default) -->
+      <div id="ai-classify-running-state" style="display: none; padding: 25px 0; text-align: center;">
+        <div style="display: inline-flex; width: 56px; height: 56px; border-radius: 50%; background: rgba(139, 92, 246, 0.12); align-items: center; justify-content: center; color: var(--accent-purple); margin-bottom: 14px;">
+          <svg class="spin-animation" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
+        </div>
+        <h4 style="font-size: 1.1rem; color: #f8fafc; margin-bottom: 6px;" id="ai-classify-status-title">Classifying Titles with DeepSeek...</h4>
+        <p style="font-size: 0.84rem; color: var(--text-secondary); max-width: 440px; margin: 0 auto 18px;" id="ai-classify-status-desc">
+          Analyzing cultural themes, sacred traditions, deities, and geography.
+        </p>
+
+        <!-- Progress bar container -->
+        <div style="background: rgba(255,255,255,0.08); border-radius: 999px; height: 8px; width: 100%; max-width: 440px; margin: 0 auto; overflow: hidden;">
+          <div id="ai-classify-progress-bar" style="background: linear-gradient(90deg, #6366f1, #a855f7); width: 15%; height: 100%; border-radius: 999px; transition: width 0.4s ease;"></div>
+        </div>
+      </div>
+
+      <!-- State 3: Completion & Results Summary (hidden by default) -->
+      <div id="ai-classify-done-state" style="display: none; padding: 10px 0;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 14px 18px;">
+          <span style="display: inline-flex; width: 36px; height: 36px; border-radius: 50%; background: rgba(16, 185, 129, 0.2); align-items: center; justify-content: center; color: var(--accent-emerald);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </span>
+          <div>
+            <h4 style="font-size: 1rem; color: #f8fafc; margin-bottom: 2px;" id="ai-classify-done-title">Classification Complete!</h4>
+            <p style="font-size: 0.82rem; color: #a7f3d0;" id="ai-classify-done-subtitle">Titles have been organized into cultural folders.</p>
+          </div>
+        </div>
+
+        <label class="form-label" style="margin-bottom: 8px;">Breakdown by Folder</label>
+        <div id="ai-classify-summary-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 4px;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer" id="ai-classify-footer">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('modal-ai-classify')">Cancel</button>
+      <button type="button" id="btn-start-ai-classify" class="btn btn-primary" onclick="executeAiClassify()" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none;">
+        ✨ Start AI Classification
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Single Title Create
+  async function handleCreateBacklog(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+
+    const payload = {
+      title: formData.get('title'),
+      topic: formData.get('topic') || '',
+      folder_id: formData.get('folder_id') || null,
+      priority: formData.get('priority') || 'normal',
+      region: formData.get('region') || '',
+      notes: formData.get('notes') || ''
+    };
+
+    try {
+      const res = await fetch('/api/backlog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      showToast('Title saved to backlog!', 'success');
+      closeModal('modal-add-backlog');
+      setTimeout(() => window.location.reload(), 300);
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  // Bulk Create
+  async function handleBulkCreateBacklog(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const btn = document.getElementById('btn-submit-bulk');
+    const autoClassifyChecked = formData.get('auto_classify') === 'true';
+
+    const payload = {
+      titlesText: formData.get('titlesText'),
+      folder_id: formData.get('folder_id') || null,
+      priority: formData.get('priority') || 'normal',
+      region: formData.get('region') || '',
+      auto_classify: autoClassifyChecked
+    };
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerText = autoClassifyChecked ? '✨ Saving & Auto-Classifying...' : 'Saving Titles...';
+    }
+
+    try {
+      const res = await fetch('/api/backlog/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      if (data.autoClassified && data.classifiedCount > 0) {
+        showToast(`Saved & Auto-Classified ${data.classifiedCount} titles into cultural folders!`, 'success');
+      } else {
+        showToast(`Saved ${data.count} titles to backlog!`, 'success');
+      }
+      closeModal('modal-bulk-backlog');
+      setTimeout(() => window.location.reload(), 400);
+    } catch (err) {
+      showToast(err.message, 'error');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerText = 'Save All Titles';
+      }
+    }
+  }
+
+  // Start Writing
+  async function startWritingBacklog(id) {
+    try {
+      showToast('Initializing article draft...', 'info');
+      const res = await fetch(`/api/backlog/${id}/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      window.location.href = data.redirectUrl;
+    } catch (err) {
+      showToast('Error starting writing: ' + err.message, 'error');
+    }
+  }
+
+  // Edit Backlog
+  async function promptEditBacklog(id) {
+    try {
+      const res = await fetch('/api/backlog');
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      const item = data.items.find(i => i.id === id);
+      if (!item) throw new Error('Title item not found');
+
+      document.getElementById('edit_backlog_id').value = item.id;
+      document.getElementById('edit_backlog_title').value = item.title;
+      document.getElementById('edit_backlog_topic').value = item.topic || '';
+      document.getElementById('edit_backlog_folder').value = item.folder_id || '';
+      document.getElementById('edit_backlog_status').value = item.status || 'planned';
+      document.getElementById('edit_backlog_priority').value = item.priority || 'normal';
+      document.getElementById('edit_backlog_region').value = item.region || '';
+      document.getElementById('edit_backlog_notes').value = item.notes || '';
+
+      openModal('modal-edit-backlog');
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  async function handleUpdateBacklog(event) {
+    event.preventDefault();
+    const id = document.getElementById('edit_backlog_id').value;
+
+    const payload = {
+      title: document.getElementById('edit_backlog_title').value.trim(),
+      topic: document.getElementById('edit_backlog_topic').value.trim(),
+      folder_id: document.getElementById('edit_backlog_folder').value || null,
+      status: document.getElementById('edit_backlog_status').value,
+      priority: document.getElementById('edit_backlog_priority').value,
+      region: document.getElementById('edit_backlog_region').value.trim(),
+      notes: document.getElementById('edit_backlog_notes').value.trim()
+    };
+
+    try {
+      const res = await fetch(`/api/backlog/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      showToast('Title updated!', 'success');
+      closeModal('modal-edit-backlog');
+      setTimeout(() => window.location.reload(), 300);
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  async function confirmDeleteBacklog(id, title) {
+    if (!confirm(`Delete "${title}" from planned titles?`)) return;
+
+    try {
+      const res = await fetch(`/api/backlog/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      showToast('Title deleted from backlog', 'success');
+      setTimeout(() => window.location.reload(), 300);
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  // Quick Assign Folder
+  async function quickAssignBacklogFolder(id, folderId, selectEl) {
+    const originalValue = selectEl.getAttribute('data-prev-value') || '';
+    selectEl.style.opacity = '0.5';
+    selectEl.disabled = true;
+
+    try {
+      const res = await fetch(`/api/backlog/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ folder_id: folderId ? Number(folderId) : null })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      selectEl.setAttribute('data-prev-value', folderId);
+      const folderName = selectEl.options[selectEl.selectedIndex].text.replace(/^[📁\s]+/, '');
+      showToast(folderId ? `Categorized into "${folderName}"` : 'Moved to Uncategorized', 'success');
+
+      if (folderId) {
+        selectEl.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+        selectEl.style.color = '#f8fafc';
+      } else {
+        selectEl.style.borderColor = 'var(--border-color)';
+        selectEl.style.color = 'var(--text-secondary)';
+      }
+    } catch (err) {
+      showToast('Error updating folder: ' + err.message, 'error');
+      selectEl.value = originalValue;
+    } finally {
+      selectEl.style.opacity = '1';
+      selectEl.disabled = false;
+    }
+  }
+
+  // Open AI Classification Modal
+  function openClassifyModal(preselectedScope) {
+    document.getElementById('ai-classify-config-state').style.display = 'block';
+    document.getElementById('ai-classify-running-state').style.display = 'none';
+    document.getElementById('ai-classify-done-state').style.display = 'none';
+    
+    const footer = document.getElementById('ai-classify-footer');
+    footer.style.display = 'flex';
+    footer.innerHTML = `
+      <button type="button" class="btn btn-ghost" onclick="closeModal('modal-ai-classify')">Cancel</button>
+      <button type="button" id="btn-start-ai-classify" class="btn btn-primary" onclick="executeAiClassify()" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none;">
+        ✨ Start AI Classification
+      </button>
+    `;
+
+    if (preselectedScope) {
+      const radio = document.querySelector(`input[name="classify_scope"][value="${preselectedScope}"]`);
+      if (radio) radio.checked = true;
+    }
+
+    openModal('modal-ai-classify');
+  }
+
+  // Execute AI Classification
+  async function executeAiClassify() {
+    const scopeRadio = document.querySelector('input[name="classify_scope"]:checked');
+    const scope = scopeRadio ? scopeRadio.value : 'uncategorized';
+
+    const configState = document.getElementById('ai-classify-config-state');
+    const runningState = document.getElementById('ai-classify-running-state');
+    const doneState = document.getElementById('ai-classify-done-state');
+    const footer = document.getElementById('ai-classify-footer');
+    const progressBar = document.getElementById('ai-classify-progress-bar');
+    const statusTitle = document.getElementById('ai-classify-status-title');
+    const statusDesc = document.getElementById('ai-classify-status-desc');
+
+    configState.style.display = 'none';
+    runningState.style.display = 'block';
+    footer.style.display = 'none';
+
+    let progress = 18;
+    progressBar.style.width = '18%';
+    statusTitle.innerText = scope === 'all' 
+      ? 'Classifying all backlog titles with DeepSeek...' 
+      : 'Classifying uncategorized titles with DeepSeek...';
+    statusDesc.innerText = 'Analyzing Igbo cultural contexts, deities, traditions, and philosophy...';
+
+    const progressInterval = setInterval(() => {
+      if (progress < 90) {
+        progress += Math.floor(Math.random() * 8) + 3;
+        progressBar.style.width = `${Math.min(progress, 90)}%`;
+      }
+    }, 600);
+
+    try {
+      const res = await fetch('/api/backlog/ai-classify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scope })
+      });
+      const data = await res.json();
+      clearInterval(progressInterval);
+      progressBar.style.width = '100%';
+
+      if (!data.success) throw new Error(data.error);
+
+      if (data.count === 0) {
+        runningState.style.display = 'none';
+        configState.style.display = 'block';
+        footer.style.display = 'flex';
+        showToast(data.message || 'No titles needed classification.', 'info');
+        closeModal('modal-ai-classify');
+        return;
+      }
+
+      setTimeout(() => {
+        runningState.style.display = 'none';
+        doneState.style.display = 'block';
+        footer.style.display = 'flex';
+
+        document.getElementById('ai-classify-done-title').innerText = `Classified ${data.count} Titles Successfully!`;
+        document.getElementById('ai-classify-done-subtitle').innerText = `All ${data.count} titles have been assigned to matching cultural folders.`;
+
+        const grid = document.getElementById('ai-classify-summary-grid');
+        grid.innerHTML = '';
+        const summaryEntries = Object.entries(data.summary || {});
+        if (summaryEntries.length > 0) {
+          summaryEntries.forEach(([folderName, count]) => {
+            const card = document.createElement('div');
+            card.style.cssText = 'background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); padding: 8px 12px; display: flex; align-items: center; justify-content: space-between;';
+            card.innerHTML = `
+              <span style="font-size: 0.85rem; color: #f8fafc; font-weight: 500;">${folderName}</span>
+              <span style="font-size: 0.78rem; font-weight: 700; background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); padding: 2px 8px; border-radius: 999px;">+${count}</span>
+            `;
+            grid.appendChild(card);
+          });
+        }
+
+        footer.innerHTML = `
+          <button type="button" class="btn btn-primary" onclick="window.location.reload()" style="background: linear-gradient(135deg, #10b981, #059669); border: none; width: 100%; justify-content: center;">
+            ✓ View Updated Backlog
+          </button>
+        `;
+        showToast(`✨ Classified ${data.count} titles into folders!`, 'success');
+      }, 400);
+
+    } catch (err) {
+      clearInterval(progressInterval);
+      runningState.style.display = 'none';
+      configState.style.display = 'block';
+      footer.style.display = 'flex';
+      showToast('Classification error: ' + err.message, 'error');
+    }
+  }
+
+  // Single Title 1-Click AI Classification
+  async function aiClassifySingleTitle(id, btnEl) {
+    const originalHtml = btnEl.innerHTML;
+    btnEl.disabled = true;
+    btnEl.innerHTML = `<svg class="spin-animation" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line></svg>`;
+
+    const selectEl = document.getElementById(`folder-select-${id}`);
+    if (selectEl) selectEl.disabled = true;
+
+    try {
+      const res = await fetch(`/api/backlog/${id}/ai-classify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      if (selectEl && data.folder) {
+        selectEl.value = data.folder.id;
+        selectEl.setAttribute('data-prev-value', data.folder.id);
+        if (data.folder.color) {
+          selectEl.style.borderColor = `${data.folder.color}88`;
+          selectEl.style.color = '#f8fafc';
+        }
+      }
+
+      showToast(`✨ Classified into "${data.folder.name}"!`, 'success');
+      btnEl.innerHTML = `✓`;
+      btnEl.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+      btnEl.style.color = 'var(--accent-emerald)';
+      setTimeout(() => {
+        btnEl.innerHTML = originalHtml;
+        btnEl.disabled = false;
+        btnEl.style.borderColor = 'rgba(139, 92, 246, 0.35)';
+        btnEl.style.color = '#c4b5fd';
+        if (selectEl) selectEl.disabled = false;
+      }, 2000);
+    } catch (err) {
+      showToast('AI classification failed: ' + err.message, 'error');
+      btnEl.innerHTML = originalHtml;
+      btnEl.disabled = false;
+      if (selectEl) selectEl.disabled = false;
+    }
+  }
+</script>

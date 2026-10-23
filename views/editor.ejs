@@ -1,0 +1,443 @@
+<div class="editor-wrapper">
+  
+  <!-- Editor Top Header -->
+  <header class="editor-header">
+    <div class="editor-header-title">
+      <a href="/" class="btn btn-ghost btn-sm" title="Back to Dashboard" style="padding: 6px 10px;">
+        ← Back
+      </a>
+      
+      <input type="text" id="article_title" class="article-title-input" placeholder="Enter captivating article title..." value="<%= (article && article.title) || 'Untitled Draft' %>">
+      
+      <button type="button" id="btn-optimize-title" class="btn btn-secondary btn-sm" onclick="openSeoTitlesModal()" style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 0.78rem; border-color: rgba(6, 182, 212, 0.4); color: var(--accent-cyan); white-space: nowrap;" title="Regenerate SEO-Optimized Titles">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        SEO Titles
+      </button>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <!-- Folder Selector -->
+      <select id="article_folder" class="form-select" style="padding: 6px 10px; font-size: 0.82rem; width: 180px;">
+        <option value="">(Uncategorized)</option>
+        <% if (locals.folders) { %>
+          <% locals.folders.forEach(function(f) { %>
+            <option value="<%= f.id %>" <%= (selectedFolderId == f.id || (article && article.folder_id == f.id)) ? 'selected' : '' %>>
+              <%= f.name %>
+            </option>
+          <% }); %>
+        <% } %>
+      </select>
+
+      <!-- Status Selector -->
+      <select id="article_status" class="form-select" style="padding: 6px 10px; font-size: 0.82rem; width: 120px;">
+        <option value="draft" <%= (!article || article.status === 'draft') ? 'selected' : '' %>>Draft</option>
+        <option value="review" <%= (article && article.status === 'review') ? 'selected' : '' %>>In Review</option>
+        <option value="published" <%= (article && article.status === 'published') ? 'selected' : '' %>>Published</option>
+      </select>
+
+      <!-- Stats Pill -->
+      <div style="display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--text-muted); background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+        <span id="word-count-display">0 words</span>
+        <span>•</span>
+        <span id="reading-time-display">1 min read</span>
+      </div>
+
+      <!-- Action Buttons -->
+      <button type="button" class="btn btn-secondary btn-sm" onclick="downloadArticleMarkdown()" title="Download .md">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        .md
+      </button>
+
+      <button type="button" class="btn btn-secondary btn-sm" onclick="copyArticleMarkdown()" title="Copy Markdown">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        Copy
+      </button>
+
+      <% if (article && article.id) { %>
+        <a href="/article/<%= article.id %>" target="_blank" class="btn btn-secondary btn-sm" title="View Reader Layout">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          Preview
+        </a>
+      <% } %>
+
+      <button type="button" id="btn-save-article" class="btn btn-primary btn-sm" onclick="saveArticle()">
+        Save Article
+      </button>
+    </div>
+  </header>
+
+  <!-- 3-Column Split Studio Workspace -->
+  <div class="editor-split-container">
+    
+    <!-- LEFT PANE: Studio Controls (Research, Outline, Flux) -->
+    <div class="studio-pane">
+      <div class="studio-tabs-bar">
+        <button type="button" class="studio-tab-btn active" data-tab="generator" onclick="switchStudioTab('generator')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          Writer
+        </button>
+        <button type="button" class="studio-tab-btn" data-tab="flux" onclick="switchStudioTab('flux')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          Flux Studio
+          <span id="flux-tab-badge" style="display: none; margin-left: 5px; background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff; font-size: 0.68rem; font-weight: 700; padding: 1px 6px; border-radius: 10px; box-shadow: 0 0 8px rgba(168, 85, 247, 0.4);">4</span>
+        </button>
+        <button type="button" class="studio-tab-btn" data-tab="summary" onclick="switchStudioTab('summary')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="10" x2="3" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="21" y1="18" x2="3" y2="18"></line></svg>
+          Summary
+        </button>
+      </div>
+
+      <!-- TAB 1: DeepSeek Writer & Research -->
+      <div id="tab-generator" class="studio-tab-content studio-tab-panel" style="display: flex;">
+        
+        <div class="form-group">
+          <label class="form-label">Article Topic / Subject *</label>
+          <input type="text" id="article_topic" class="form-input" placeholder="e.g. The Sacred Ogbuide Oracle of Oguta" value="<%= (article && article.topic) || '' %>">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Min Article Length</label>
+            <select id="article_min_words" class="form-select">
+              <option value="1000">Standard (~1,000 words)</option>
+              <option value="1500" selected>In-Depth (~1,500 words - Default)</option>
+              <option value="2000">Comprehensive (~2,000 words)</option>
+              <option value="2500">Longform (~2,500+ words)</option>
+              <option value="3000">Deep Treatise (~3,000+ words)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">AI Engine</label>
+            <select id="deepseek_model_select" class="form-select">
+              <option value="deepseek-flash" selected>deepseek-flash (DeepSeek-V4.1 Flash)</option>
+              <option value="deepseek-v4-pro">deepseek-v4-pro (DeepSeek-V4 Pro - High Depth)</option>
+              <option value="deepseek-chat">deepseek-chat (Auto)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Dialect / Region (optional)</label>
+          <input type="text" id="article_region" class="form-input" placeholder="e.g. Imo State, Oguta, Nsukka, Anioma" value="<%= (article && article.region) || '' %>">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Editorial Focus & Custom Angle</label>
+          <textarea id="article_angle" class="form-textarea" placeholder="Specific themes to emphasize (e.g. Explore pre-colonial water divinity, contrast with Christianity, interview perspectives)..."></textarea>
+        </div>
+
+        <!-- Custom Outline Builder -->
+        <div class="form-group">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <label class="form-label" style="margin-bottom: 0;">Custom Outline Structure</label>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="addOutlineSection()" style="font-size: 0.75rem; padding: 2px 8px;">
+              + Add Section
+            </button>
+          </div>
+          <div id="outline-builder-container" class="outline-builder-list" style="margin-top: 6px;"></div>
+        </div>
+
+        <!-- Live Web Research Section -->
+        <div class="form-group" style="border-top: 1px solid var(--border-color); padding-top: 14px;">
+          <label class="form-label">Live DeepSeek Web Research</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="research_query" class="form-input" style="flex: 1; font-size: 0.82rem;" placeholder="Search query (defaults to Topic)">
+            <button type="button" id="btn-run-research" class="btn btn-secondary btn-sm" onclick="runWebResearch()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              Search
+            </button>
+          </div>
+          <div id="research-results-container" class="research-results-list" style="margin-top: 8px;"></div>
+        </div>
+
+        <!-- Toggles -->
+        <div style="display: flex; gap: 16px; padding: 10px 0; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer;">
+            <input type="checkbox" id="toggle_summary" checked>
+            <span>Executive Summary</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer;">
+            <input type="checkbox" id="toggle_references" checked>
+            <span>Works Cited</span>
+          </label>
+        </div>
+
+        <!-- Generate Article CTA -->
+        <button type="button" id="btn-generate-article" class="btn btn-primary btn-lg" onclick="generateArticleWithDeepSeek()" style="width: 100%; margin-top: 6px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          Generate Article Draft
+        </button>
+
+        <!-- DeepSeek Reasoning Display (Collapsible) -->
+        <div id="reasoning-display" style="display: <%= (article && article.reasoning_log) ? 'block' : 'none' %>; margin-top: 10px;">
+          <details style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 12px; font-size: 0.78rem;">
+            <summary style="font-weight: 600; color: var(--accent-cyan); cursor: pointer;">DeepSeek Reasoning Trace</summary>
+            <div id="reasoning-text" style="color: var(--text-muted); margin-top: 8px; white-space: pre-wrap; font-family: monospace; max-height: 200px; overflow-y: auto;">
+              <%= (article && article.reasoning_log) || '' %>
+            </div>
+          </details>
+        </div>
+
+        <!-- Visual Prompts Ready for Article (Tab 1 Direct Visuals Panel) -->
+        <div id="writer-visuals-panel" style="display: none; margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label class="form-label" style="margin-bottom: 0; color: var(--accent-purple); display: flex; align-items: center; gap: 5px; font-weight: 700;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+              Visuals & Images Ready (<span id="writer-visuals-count">0</span>)
+            </label>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="switchStudioTab('flux')" style="font-size: 0.72rem; padding: 2px 6px; color: var(--accent-cyan);">
+              Flux Studio &rarr;
+            </button>
+          </div>
+          <div id="writer-visuals-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+
+      </div>
+
+      <!-- TAB 2: Flux Image Studio -->
+      <div id="tab-flux" class="studio-tab-content studio-tab-panel" style="display: none;">
+        
+        <!-- Live Flux Preview Box -->
+        <div id="flux-live-preview" class="flux-preview-box">
+          <div id="cover-image-placeholder" style="color: var(--text-muted); font-size: 0.82rem; text-align: center; padding: 20px;">
+            No Image Generated Yet.<br>Use prompts below or type custom visual scene.
+          </div>
+          <img id="cover-image-preview" src="<%= (article && article.cover_image) || '' %>" class="flux-preview-img" style="display: <%= (article && article.cover_image) ? 'block' : 'none' %>;" alt="Cover Preview">
+        </div>
+
+        <!-- Prompt Input -->
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label class="form-label" style="margin-bottom: 0;">Flux Image Prompt *</label>
+            <button type="button" id="btn-enhance-prompt" class="btn btn-ghost btn-sm" onclick="enhanceCurrentPromptAction()" style="color: var(--accent-cyan); font-size: 0.74rem; padding: 2px 8px; border: 1px solid rgba(0, 240, 255, 0.35); border-radius: 4px; display: flex; align-items: center; gap: 4px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              <span>✨ Enhance with AI</span>
+            </button>
+          </div>
+          <textarea id="flux_prompt_input" class="form-textarea" style="min-height: 90px;" placeholder="Describe scene with authentic historical regalia, sacred landscape, lighting, 4k quality, strictly NO text..."></textarea>
+          
+          <!-- Quick Diversity & Subject Presets -->
+          <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px;">
+            <span style="font-size: 0.7rem; color: var(--text-muted); align-self: center; margin-right: 2px;">Presets:</span>
+            <button type="button" class="preset-chip" onclick="applyPromptPreset('artifact')" title="Museum artifact still life - zero human faces">🏺 Artifact Macro (No Faces)</button>
+            <button type="button" class="preset-chip" onclick="applyPromptPreset('portrait')" title="Weathered, authentic, non-generic human portrait">👤 Diverse Elder Portrait</button>
+            <button type="button" class="preset-chip" onclick="applyPromptPreset('artisan')" title="Master craftsman carving or working in studio">⚒️ Artisan at Work</button>
+            <button type="button" class="preset-chip" onclick="applyPromptPreset('landscape')" title="Atmospheric sacred architecture or grove">🌿 Sacred Grove & Obi</button>
+          </div>
+        </div>
+
+        <!-- Aspect Ratio -->
+        <div class="form-group">
+          <label class="form-label">Aspect Ratio</label>
+          <div class="aspect-btn-group">
+            <button type="button" class="aspect-btn active" data-ratio="16:9" onclick="setFluxAspectRatio('16:9')">16:9 (Cover Banner)</button>
+            <button type="button" class="aspect-btn" data-ratio="1:1" onclick="setFluxAspectRatio('1:1')">1:1 (Square)</button>
+            <button type="button" class="aspect-btn" data-ratio="9:16" onclick="setFluxAspectRatio('9:16')">9:16 (Portrait)</button>
+          </div>
+        </div>
+
+        <!-- Generate Button -->
+        <button type="button" id="btn-generate-flux" class="btn btn-purple btn-lg" onclick="generateFluxImageAction()" style="width: 100%;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          Generate with Flux Worker
+        </button>
+
+        <!-- Suggested Visual Prompts from DeepSeek -->
+        <div class="form-group" style="border-top: 1px solid var(--border-color); padding-top: 14px;">
+          <label class="form-label">AI Suggested Prompts for this Article</label>
+          <div id="suggested-prompts-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+
+      </div>
+
+      <!-- TAB 3: Executive Summary Editor -->
+      <div id="tab-summary" class="studio-tab-content studio-tab-panel" style="display: none;">
+        <div class="form-group">
+          <label class="form-label">Executive Summary (Max 75-100 Words)</label>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 8px;">
+            A concise block with Core Premise + 3 Key Strategic Takeaways shown in a callout card at the head of the article.
+          </p>
+          <textarea id="executive_summary" class="form-textarea" style="min-height: 220px;" placeholder="Core Premise: ...&#10;&#10;Key Strategic Takeaways:&#10;- Takeaway 1&#10;- Takeaway 2&#10;- Takeaway 3"><%= (article && article.executive_summary) || '' %></textarea>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MIDDLE PANE: Markdown Editor -->
+    <div class="editor-pane">
+      <!-- Toolbar -->
+      <div class="editor-toolbar">
+        <div class="editor-tools-group">
+          <button type="button" class="tool-btn" onclick="insertMarkdownSyntax('## ')" title="Heading 2"><strong>H2</strong></button>
+          <button type="button" class="tool-btn" onclick="insertMarkdownSyntax('### ')" title="Heading 3"><strong>H3</strong></button>
+          <button type="button" class="tool-btn" onclick="insertMarkdownSyntax('**', '**')" title="Bold"><strong>B</strong></button>
+          <button type="button" class="tool-btn" onclick="insertMarkdownSyntax('*', '*')" title="Italic"><em>I</em></button>
+          <button type="button" class="tool-btn" onclick="insertMarkdownSyntax('> ')" title="Blockquote">”</button>
+          <button type="button" class="tool-btn" onclick="insertMarkdownSyntax('* ')" title="Bullet List">• List</button>
+          <button type="button" class="tool-btn" onclick="insertMarkdownSyntax('[', '](https://)')" title="Link">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+          </button>
+          <button type="button" class="tool-btn" onclick="openImagePickerModal()" title="Insert or Generate Image" style="display: flex; align-items: center; gap: 4px; color: var(--accent-purple);">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+            Image
+          </button>
+        </div>
+
+        <div style="font-size: 0.76rem; color: var(--text-muted);">
+          Markdown mode
+        </div>
+      </div>
+
+      <!-- Visual Alert Banner when prompts ready -->
+      <div id="editor-visuals-banner" style="display: none; background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 6px; padding: 8px 12px; margin-bottom: 8px; align-items: center; justify-content: space-between; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 0.78rem;">
+          <span style="font-size: 1.1rem;">🎨</span>
+          <div>
+            <span style="font-weight: 600; color: #fff;"><span id="banner-visuals-count">4</span> Cultural Visuals Ready</span>
+            <span style="color: var(--text-muted); display: block; font-size: 0.71rem;">Click to generate and add hero banner or inline photographs directly into this article.</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button type="button" id="btn-banner-quick-cover" class="btn btn-purple btn-sm" onclick="quickGenerateHeroCover()" style="font-size: 0.74rem; padding: 3px 10px; white-space: nowrap;">⚡ Generate Cover</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="openImagePickerModal()" style="font-size: 0.74rem; padding: 3px 10px; white-space: nowrap;">🖼️ View All Visuals</button>
+        </div>
+      </div>
+
+      <!-- Live Textarea -->
+      <textarea id="markdown_content" class="markdown-textarea" placeholder="Start typing or generate full essay with DeepSeek..."><%= (article && article.content_markdown) || '' %></textarea>
+    </div>
+
+    <!-- RIGHT PANE: Live Rendered Article Preview -->
+    <div class="preview-pane">
+      <div class="article-reader-container">
+        
+        <!-- Live Cover Hero Banner -->
+        <div id="preview-hero-banner" class="article-hero-banner" style="display: <%= (article && article.cover_image) ? 'block' : 'none' %>;">
+          <img src="<%= (article && article.cover_image) || '' %>" class="article-hero-img" alt="Cover Banner">
+        </div>
+
+        <!-- Live Executive Summary Box -->
+        <div id="preview-summary-box" class="executive-summary-box" style="display: <%= (article && article.executive_summary) ? 'block' : 'none' %>;">
+          <div class="executive-summary-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="10" x2="3" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="21" y1="18" x2="3" y2="18"></line></svg>
+            Executive Summary
+          </div>
+          <div id="preview-summary-text" style="font-size: 0.95rem; line-height: 1.6; color: #e2e8f0;">
+            <%= (article && article.executive_summary) ? article.executive_summary.replace(/\n/g, '<br>') : '' %>
+          </div>
+        </div>
+
+        <!-- Live Rendered Markdown Prose -->
+        <div id="live-preview-content" class="article-prose">
+          <p style="color: var(--text-muted); font-style: italic;">Live preview will appear here...</p>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal: SEO Title Optimizer -->
+<div id="modal-seo-titles" class="modal-overlay">
+  <div class="modal-card" style="max-width: 640px;">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="display: inline-flex; width: 26px; height: 26px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); align-items: center; justify-content: center; color: var(--accent-cyan);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        </span>
+        <h3>SEO Title Optimizer</h3>
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal('modal-seo-titles')">✕</button>
+    </div>
+
+    <div class="modal-body" style="gap: 14px;">
+      <div style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">
+        DeepSeek generates 4 high-CTR, search-optimized title variants specifically formatted to stay under <strong>60 characters</strong> (so Google never truncates them with ellipses).
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+        <div style="font-size: 0.84rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <span style="color: var(--text-muted);">Current:</span>
+          <strong id="seo-modal-current-title" style="margin-left: 4px;">Untitled Draft</strong>
+        </div>
+        <button type="button" id="btn-refresh-seo-titles" class="btn btn-secondary btn-sm" onclick="fetchSeoTitles(true)" style="display: flex; align-items: center; gap: 5px; padding: 4px 10px; font-size: 0.78rem;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          Regenerate
+        </button>
+      </div>
+
+      <!-- Titles List Container -->
+      <div id="seo-titles-container" style="display: flex; flex-direction: column; gap: 10px; min-height: 180px;">
+        <div style="text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 0.85rem;">
+          Click "Regenerate" or open to generate options...
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('modal-seo-titles')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Image Manager & Visual Inserter -->
+<div id="modal-insert-image" class="modal-overlay">
+  <div class="modal-card" style="max-width: 680px; max-height: 85vh; display: flex; flex-direction: column;">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="display: inline-flex; width: 26px; height: 26px; border-radius: 6px; background: rgba(168, 85, 247, 0.15); align-items: center; justify-content: center; color: var(--accent-purple);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+        </span>
+        <h3>Add Visual to Article</h3>
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal('modal-insert-image')">✕</button>
+    </div>
+
+    <!-- Modal Tab Nav -->
+    <div style="display: flex; gap: 6px; padding: 8px 16px; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.15);">
+      <button type="button" class="img-modal-tab-btn active" data-tab="suggested" onclick="switchImageModalTab('suggested')">AI Visuals (<span id="modal-tab-count">0</span>)</button>
+      <button type="button" class="img-modal-tab-btn" data-tab="gallery" onclick="switchImageModalTab('gallery')">Saved Gallery</button>
+      <button type="button" class="img-modal-tab-btn" data-tab="upload" onclick="switchImageModalTab('upload')">Upload Local File</button>
+    </div>
+
+    <div class="modal-body" style="overflow-y: auto; flex: 1; padding: 16px;">
+      <!-- Panel 1: Suggested Visuals -->
+      <div id="img-modal-panel-suggested" style="display: flex; flex-direction: column; gap: 10px;">
+        <div id="modal-suggested-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
+      </div>
+
+      <!-- Panel 2: Saved Gallery -->
+      <div id="img-modal-panel-gallery" style="display: none; flex-direction: column; gap: 10px;">
+        <div id="modal-gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px;"></div>
+      </div>
+
+      <!-- Panel 3: Upload -->
+      <div id="img-modal-panel-upload" style="display: none; flex-direction: column; gap: 12px; text-align: center; padding: 20px;">
+        <input type="file" id="modal-image-file-input" accept="image/*" style="display: none;" onchange="handleModalImageUpload(event)">
+        <div onclick="document.getElementById('modal-image-file-input').click()" style="border: 2px dashed var(--border-color); border-radius: 8px; padding: 30px 20px; cursor: pointer; transition: border-color 0.2s;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="margin-bottom: 8px; color: var(--accent-purple);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <p style="font-size: 0.85rem; color: var(--text-primary); margin: 0;">Click or drag and drop image file here</p>
+          <p style="font-size: 0.74rem; color: var(--text-muted); margin-top: 4px;">PNG, JPG, WEBP up to 15MB</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+      <button type="button" class="btn btn-ghost btn-sm" onclick="switchStudioTab('flux'); closeModal('modal-insert-image');" style="color: var(--accent-cyan); font-size: 0.78rem;">Open Full Flux Studio &rarr;</button>
+      <button type="button" class="btn btn-ghost" onclick="closeModal('modal-insert-image')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Initial Data Injection for Script -->
+<script>
+  window.INITIAL_ARTICLE_ID = <%= (article && article.id) ? article.id : 'null' %>;
+  window.INITIAL_FOLDER_ID = <%= ((selectedFolderId) || (article && article.folder_id)) ? (selectedFolderId || article.folder_id) : 'null' %>;
+  window.INITIAL_OUTLINE = <%- JSON.stringify(article ? (typeof article.outline === 'string' ? JSON.parse(article.outline || '[]') : (article.outline || [])) : []) %>;
+  window.INITIAL_CITATIONS = <%- JSON.stringify(article ? (typeof article.citations === 'string' ? JSON.parse(article.citations || '[]') : (article.citations || [])) : []) %>;
+  window.INITIAL_IMAGE_PROMPTS = <%- JSON.stringify(article ? (typeof article.image_prompts === 'string' ? JSON.parse(article.image_prompts || '[]') : (article.image_prompts || article.imagePrompts || [])) : []) %>;
+  window.INITIAL_COVER_IMAGE = "<%= (article && article.cover_image) || '' %>";
+  window.INITIAL_REASONING = <%- JSON.stringify((article && article.reasoning_log) || '') %>;
+</script>
+<script src="/js/editor.js"></script>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title || 'DeepSeek Writer - IgboAtlas Studio' %></title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <!-- Modern SVG Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230284c7'/%3E%3Cstop offset='100%25' stop-color='%233b82f6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='26' fill='url(%23g)'/%3E%3Ctext x='50' y='69' font-size='56' font-family='sans-serif' font-weight='800' fill='%23ffffff' text-anchor='middle'%3E%E1%BB%8C%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="brand-badge">
+          <div class="brand-logo-icon">Ọ</div>
+          <div>
+            <div class="brand-title">DeepSeek<span style="color: var(--accent-cyan);">Writer</span></div>
+            <div class="brand-subtitle">igboatlas.com studio</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="sidebar-content">
+        <!-- New Article Quick CTA -->
+        <a href="/editor/new" class="btn btn-primary" style="width: 100%; justify-content: center;">
+          <span style="font-size: 1.1rem; line-height: 1;">+</span> New Article
+        </a>
+
+        <!-- Main Navigation -->
+        <div>
+          <div class="sidebar-section-title">Navigation</div>
+          <nav class="sidebar-nav">
+            <a href="/" class="nav-item <%= (!locals.activeFolder && locals.currentStatus === 'all' && !locals.searchQuery && !locals.title?.includes('Planned Titles') && !locals.title?.includes('Folder Manager')) ? 'active' : '' %>">
+              <span class="nav-item-left">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                All Articles
+              </span>
+              <span class="nav-count"><%= (locals.stats && locals.stats.total) || 0 %></span>
+            </a>
+
+            <a href="/backlog" class="nav-item <%= locals.title && locals.title.includes('Planned Titles') ? 'active' : '' %>">
+              <span class="nav-item-left">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                Planned Titles
+              </span>
+              <span class="nav-count" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); font-weight: 700;"><%= locals.backlogPendingCount !== undefined ? locals.backlogPendingCount : ((locals.backlogStats && locals.backlogStats.planned) || 0) %></span>
+            </a>
+
+            <a href="/folders" class="nav-item <%= locals.title && locals.title.includes('Folder Manager') ? 'active' : '' %>">
+              <span class="nav-item-left">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                Manage Folders
+              </span>
+              <span class="nav-count"><%= (locals.folders && locals.folders.length) || 0 %></span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- Folders Section -->
+        <div>
+          <div class="sidebar-section-title">
+            <span>Folders</span>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="openModal('modal-create-folder')" title="Create Folder" style="padding: 2px 6px; font-size: 0.9rem;">+</button>
+          </div>
+          <nav class="sidebar-nav">
+            <% if (locals.folders && locals.folders.length > 0) { %>
+              <% 
+                const isBacklogView = locals.title && locals.title.includes('Planned Titles');
+              %>
+              <% locals.folders.forEach(function(f) { %>
+                <% const folderHref = isBacklogView ? ('/backlog?folder=' + f.slug) : ('/?folder=' + f.slug); %>
+                <a href="<%= folderHref %>" class="nav-item <%= (locals.activeFolder && locals.activeFolder.id === f.id) ? 'active' : '' %>">
+                  <span class="nav-item-left">
+                    <span class="folder-badge-dot" style="background-color: <%= f.color || '#475569' %>;"></span>
+                    <span><%= f.name %></span>
+                  </span>
+                  <span class="nav-count" title="<%= isBacklogView ? ((f.backlog_count || 0) + ' planned titles') : ((f.article_count || 0) + ' articles') %>">
+                    <%= isBacklogView ? (f.backlog_count || 0) : (f.article_count || 0) %>
+                  </span>
+                </a>
+              <% }); %>
+            <% } %>
+
+            <% const uncatHref = (locals.title && locals.title.includes('Planned Titles')) ? '/backlog?folder=uncategorized' : '/?folder=uncategorized'; %>
+            <a href="<%= uncatHref %>" class="nav-item <%= (locals.activeFolder && locals.activeFolder.slug === 'uncategorized') ? 'active' : '' %>" style="color: var(--text-muted);">
+              <span class="nav-item-left">
+                <span class="folder-badge-dot" style="background-color: #64748b;"></span>
+                <span>Uncategorized</span>
+              </span>
+            </a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div style="font-size: 0.72rem; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between;">
+          <span>Model: <strong>deepseek-flash</strong></span>
+          <span style="color: var(--accent-emerald);">● Ready</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Topbar Header -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <% if (locals.activeFolder) { %>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="folder-badge-dot" style="background: <%= locals.activeFolder.color || '#38bdf8' %>; width: 11px; height: 11px;"></span>
+              <span style="font-weight: 700; font-size: 1.05rem;"><%= locals.activeFolder.name %></span>
+            </div>
+          <% } else { %>
+            <form action="/" method="GET" class="search-input-wrap">
+              <span class="search-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              </span>
+              <input type="text" name="q" class="search-input" placeholder="Search articles, topics, regions..." value="<%= locals.searchQuery || '' %>">
+            </form>
+          <% } %>
+        </div>
+
+        <div class="topbar-right">
+          <a href="/editor/new" class="btn btn-primary btn-sm">
+            <span>+</span> Write Article
+          </a>
+        </div>
+      </header>
+
+      <!-- Main Body View -->
+      <main style="flex: 1; display: flex; flex-direction: column;">
+        <%- body %>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal: Create Folder -->
+  <div id="modal-create-folder" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Create New Folder</h3>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal('modal-create-folder')">✕</button>
+      </div>
+      <form onsubmit="handleCreateFolder(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Folder Name *</label>
+            <input type="text" name="folder_name" class="form-input" placeholder="e.g. Ancient Shrines & Deities" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description (optional)</label>
+            <input type="text" name="folder_description" class="form-input" placeholder="Articles covering sacred groves, covenants, and oracles">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Accent Color</label>
+            <input type="color" name="folder_color" value="#0284c7" style="height: 38px; width: 100%; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: transparent; cursor: pointer;">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('modal-create-folder')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Folder</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Move Article -->
+  <div id="modal-move-article" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Move Article to Folder</h3>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal('modal-move-article')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Select Destination Folder</label>
+          <select id="move_folder_select" class="form-select">
+            <option value="">(Uncategorized / No Folder)</option>
+            <% if (locals.folders) { %>
+              <% locals.folders.forEach(function(f) { %>
+                <option value="<%= f.id %>"><%= f.name %></option>
+              <% }); %>
+            <% } %>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-move-article')">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="confirmMoveArticle()">Move Article</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="/js/main.js"></script>
+</body>
+</html>

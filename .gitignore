@@ -1,0 +1,14 @@
+node_modules/
+.env
+storage/images/*
+!storage/images/.gitkeep
+deepseekwriter.db
+deepseekwriter.db-journal
+deepseekwriter.db-wal
+deepseekwriter.db-shm
+database.sqlite
+*.sqlite
+ikenga_draft_dump.txt
+db_article_5_content.md
+.DS_Store
+*.log

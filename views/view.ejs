@@ -1,0 +1,97 @@
+<div class="dashboard-content" style="max-width: 900px;">
+
+  <!-- Reader Top Bar -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
+    <a href="/" class="btn btn-ghost btn-sm">
+      ← Back to Dashboard
+    </a>
+
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <a href="/editor/<%= article.id %>" class="btn btn-secondary btn-sm">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+        Edit in Studio
+      </a>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="copyPublishedHtml()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        Copy HTML
+      </button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="downloadArticleMarkdown()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Download .md
+      </button>
+    </div>
+  </div>
+
+  <article class="article-reader-container">
+    
+    <!-- Meta Info -->
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+      <% if (article.folder_name) { %>
+        <span class="folder-badge" style="border-left: 3px solid <%= article.folder_color || '#38bdf8' %>; padding: 4px 10px; font-size: 0.8rem;">
+          <%= article.folder_name %>
+        </span>
+      <% } %>
+      <% if (article.region) { %>
+        <span style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          <%= article.region %>
+        </span>
+      <% } %>
+      <span class="status-badge <%= article.status %>">
+        <%= article.status %>
+      </span>
+      <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: auto;">
+        <%= article.word_count %> words • <%= article.reading_time %> min read
+      </span>
+    </div>
+
+    <!-- Hero Banner Image -->
+    <% if (article.cover_image) { %>
+      <div class="article-hero-banner">
+        <img src="<%= article.cover_image %>" class="article-hero-img" alt="<%= article.title %>">
+      </div>
+    <% } %>
+
+    <!-- Executive Summary Box -->
+    <% if (article.executive_summary) { %>
+      <div class="executive-summary-box">
+        <div class="executive-summary-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="10" x2="3" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="21" y1="18" x2="3" y2="18"></line></svg>
+          Executive Summary
+        </div>
+        <div style="font-size: 0.98rem; line-height: 1.6; color: #e2e8f0;">
+          <%- article.executive_summary.replace(/\n/g, '<br>') %>
+        </div>
+      </div>
+    <% } %>
+
+    <!-- Full Article Prose Body -->
+    <div id="article-body-content" class="article-prose">
+      <%- renderedHtml %>
+    </div>
+
+  </article>
+
+</div>
+
+<script>
+  function copyPublishedHtml() {
+    const content = document.getElementById('article-body-content');
+    if (!content) return;
+    navigator.clipboard.writeText(content.innerHTML);
+    showToast('Published HTML copied to clipboard!', 'success');
+  }
+
+  function downloadArticleMarkdown() {
+    const rawMarkdown = <%- JSON.stringify(article.content_markdown || '') %>;
+    const title = "<%= article.slug %>";
+    const blob = new Blob([rawMarkdown], { type: 'text/markdown;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${title}.md`;
+    a.click();
+    URL.revokeObjectURL(a);
+    showToast('Downloaded .md file!', 'success');
+  }
+</script>
